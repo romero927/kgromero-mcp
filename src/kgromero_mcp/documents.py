@@ -15,7 +15,7 @@ from urllib.parse import urlparse
 
 import httpx
 import pypdfium2 as pdfium
-from mcp_types import ImageContent, TextContent
+from mcp_types import ImageContent, ResourceLink, TextContent
 from PIL import Image as PILImage
 
 from . import data
@@ -27,6 +27,21 @@ IMAGE_LONG_EDGE = 1400  # px; Claude downsizes anything over ~1568 anyway
 SPARSE_PAGE_CHARS = 200  # pages with less text than this are probably slides/diagrams
 VIDEO_EXTS = {".webm", ".mp4", ".mov"}
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
+MIME_TYPES = {
+    ".pdf": "application/pdf",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+    ".webm": "video/webm",
+    ".mp4": "video/mp4",
+    ".mov": "video/quicktime",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".md": "text/markdown",
+    ".vcf": "text/vcard",
+    ".json": "application/json",
+}
 
 _bytes_cache: OrderedDict[str, bytes] = OrderedDict()
 _CACHE_BUDGET = 40 * 1024 * 1024
@@ -202,25 +217,43 @@ def pdf_content(doc: Doc, body: bytes, pages: str | None, as_images: bool) -> li
 
 async def get(query: str, pages: str | None, as_images: bool) -> list[TextContent | ImageContent]:
     doc = await find(query)
-
     if not doc.on_site:
         return [TextContent(type="text", text=f"{doc.name} is an external page, not a file on kgromero.com. Open it at {doc.url}")]
+    blocks, size = await _content(doc, pages, as_images)
+    # Also link the original file, so clients that can open or download files get the real thing.
+    return [*blocks, file_link(doc, size)]
+
+
+def file_link(doc: Doc, size: int | None = None) -> ResourceLink:
+    return ResourceLink(
+        type="resource_link",
+        uri=doc.url,
+        name=doc.url.rsplit("/", 1)[-1] or doc.name,
+        title=doc.name,
+        description=f"Original file ({doc.group})",
+        mime_type=MIME_TYPES.get(doc.ext, "application/json" if doc.url.endswith("/api/resume") else None),
+        size=size,
+    )
+
+
+async def _content(doc: Doc, pages: str | None, as_images: bool) -> tuple[list[TextContent | ImageContent], int | None]:
+    """The model-friendly content for a file on the site, and its size in bytes if fetched."""
     if doc.ext in VIDEO_EXTS:
-        return [TextContent(type="text", text=f"{doc.name} is a video, which can't be passed through MCP. Watch it at {doc.url}")]
+        return [TextContent(type="text", text=f"{doc.name} is a video, which can't be passed through MCP. Watch it at {doc.url}")], None
     if doc.ext == ".docx":
         # Same content as the PDF/Markdown resume; Markdown is the most useful form for a model.
         md = await data.get_resume_markdown()
-        return [TextContent(type="text", text=f"{doc.name}: the Word file has the same content as this Markdown version. Download: {doc.url}\n\n{md}")]
+        return [TextContent(type="text", text=f"{doc.name}: the Word file has the same content as this Markdown version. Download: {doc.url}\n\n{md}")], None
 
     body = await fetch_bytes(doc.url)
     if doc.ext == ".pdf":
-        return pdf_content(doc, body, pages, as_images)
+        return pdf_content(doc, body, pages, as_images), len(body)
     if doc.ext in IMAGE_EXTS:
         img = flatten(PILImage.open(io.BytesIO(body)))
         caption = f"{doc.name} ({doc.group}), image {img.width}x{img.height}. Source: {doc.url}"
-        return [TextContent(type="text", text=caption), to_image_content(img)]
+        return [TextContent(type="text", text=caption), to_image_content(img)], len(body)
     # JSON, Markdown, vCard, and other text
     text = body.decode("utf-8", errors="replace")
     if len(text) > MAX_TEXT_CHARS:
         text = text[:MAX_TEXT_CHARS] + "\n[truncated]"
-    return [TextContent(type="text", text=f"{doc.name} ({doc.group}). Source: {doc.url}\n\n{text}")]
+    return [TextContent(type="text", text=f"{doc.name} ({doc.group}). Source: {doc.url}\n\n{text}")], len(body)

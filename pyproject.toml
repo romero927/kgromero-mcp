@@ -1,6 +1,6 @@
 [project]
 name = "kgromero-mcp"
-version = "0.2.0"
+version = "0.2.1"
 description = "MCP server for kgromero.com: Kyle Romero's resume, experience, skills, and contact info"
 readme = "README.md"
 requires-python = ">=3.10"

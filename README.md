@@ -53,7 +53,7 @@ If the site can't be reached, the server uses the copies bundled in `src/kgromer
 | `get_skills(filter?)` | Skills by category, and tech used on the job with where and how recently |
 | `list_side_projects` | Personal projects with GitHub links |
 | `list_documents(group?)` | Resume downloads plus the portfolio (diagrams, write-ups, lab reports) by employer |
-| `get_document(document, pages?, as_images?)` | Reads a listed document: PDF text, diagrams as images, PDF pages rendered as images (up to 5 per call) |
+| `get_document(document, pages?, as_images?)` | Reads a listed document: PDF text, diagrams as images, PDF pages rendered as images (up to 5 per call), plus a link to the original file |
 | `get_interests` | Hobbies and favorite tech news sites |
 | `get_travel(lived_only?)` | Places lived and visited |
 | `search(query)` | Keyword search across all of the above |

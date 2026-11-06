@@ -9,7 +9,7 @@ from importlib.metadata import version
 from typing import Any
 
 from mcp.server.mcpserver import MCPServer
-from mcp_types import ImageContent, TextContent, ToolAnnotations
+from mcp_types import ImageContent, ResourceLink, TextContent, ToolAnnotations
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse, Response
 
@@ -241,11 +241,12 @@ async def list_documents(group: str | None = None) -> list[dict[str, Any]]:
 @mcp.tool(annotations=READ_ONLY, structured_output=False)
 async def get_document(
     document: str, pages: str | None = None, as_images: bool = False
-) -> list[TextContent | ImageContent]:
+) -> list[TextContent | ImageContent | ResourceLink]:
     """Read a document from kgromero.com: PDFs as text, diagrams and photos as images.
 
     Many PDFs are slide decks or scans; the text result lists pages that are mostly
-    visual so you can call again with as_images=true to see them.
+    visual so you can call again with as_images=true to see them. Results for files on
+    the site end with a link to the original file.
 
     Args:
         document: Name, part of a name, filename, or URL from list_documents

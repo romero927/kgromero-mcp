@@ -131,6 +131,34 @@ async def test_video_external_and_docx_need_no_fetch():
     assert "Kyle Romero" in docx.content[0].text
 
 
+async def test_results_end_with_a_link_to_the_original_file():
+    pdf = text_pdf(["Deployed " * 30])
+    FILES["Workflow.pdf"] = pdf
+    FILES["Electron-Architecture.png"] = png((40, 20))
+    cases = {
+        "Team Workflow": ("https://kgromero.com/docs/Workflow.pdf", "application/pdf", len(pdf)),
+        "Electron Architecture": ("https://kgromero.com/docs/Electron-Architecture.png", "image/png", None),
+        "RPi LED Display": ("https://kgromero.com/docs/RPi-LED-Display.webm", "video/webm", None),
+        "Resume (Word)": (
+            "https://kgromero.com/Kyle_Romero-Resume.docx",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            None,
+        ),
+    }
+    for query, (uri, mime, size) in cases.items():
+        r = await call({"document": query})
+        link = r.content[-1]
+        assert link.type == "resource_link", query
+        assert (str(link.uri), link.mime_type) == (uri, mime), query
+        if size is not None:
+            assert link.size == size
+    # The link is extra: the model-readable content is still first.
+    assert (await call({"document": "Team Workflow"})).content[0].type == "text"
+    # External pages aren't files, so they get no file link.
+    external = await call({"document": "Press Release"})
+    assert all(c.type != "resource_link" for c in external.content)
+
+
 async def test_text_files():
     FILES["kgromero.vcf"] = b"BEGIN:VCARD\nFN:Kyle Romero\nEND:VCARD"
     r = await call({"document": "vCard"})
