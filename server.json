@@ -1,0 +1,28 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.romero927/kgromero-mcp",
+  "title": "Kyle Romero (kgromero.com)",
+  "description": "Ask about Kyle Romero's experience, skills, projects, and portfolio from kgromero.com.",
+  "websiteUrl": "https://kgromero.com/api-docs#mcp",
+  "repository": {
+    "url": "https://github.com/romero927/kgromero-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "kgromero-mcp",
+      "version": "0.1.0",
+      "runtimeHint": "uvx",
+      "transport": { "type": "stdio" }
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://kgromero.com/mcp"
+    }
+  ]
+}

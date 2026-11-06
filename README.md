@@ -1,5 +1,7 @@
 # kgromero-mcp
 
+<!-- mcp-name: io.github.romero927/kgromero-mcp -->
+
 An [MCP](https://modelcontextprotocol.io) server for [kgromero.com](https://kgromero.com). It lets AI assistants (Claude, Cursor, etc.) answer questions about Kyle Romero's experience, skills, projects, and portfolio from the content on the site.
 
 ## Use it
@@ -15,6 +17,18 @@ In Claude (web/desktop): Settings → Connectors → Add custom connector → pa
 ```json
 { "mcpServers": { "kgromero": { "url": "https://kgromero.com/mcp" } } }
 ```
+
+Or run it locally from [PyPI](https://pypi.org/project/kgromero-mcp/) over stdio:
+
+```bash
+uvx kgromero-mcp
+```
+
+```json
+{ "mcpServers": { "kgromero": { "command": "uvx", "args": ["kgromero-mcp"] } } }
+```
+
+It's also listed in the [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.romero927/kgromero-mcp`.
 
 ## How it works
 
@@ -86,6 +100,13 @@ Runs on Fly.io as the `kgromero-mcp` app (`Dockerfile`, `fly.toml`). The machine
 ```bash
 fly deploy --remote-only
 ```
+
+## Releasing
+
+1. Bump the version in `pyproject.toml` and in both places in `server.json`.
+2. Commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
+
+`.github/workflows/publish.yml` checks the versions match the tag, runs the tests, publishes to PyPI, and then updates the MCP Registry listing. PyPI uses trusted publishing (GitHub environment `pypi`) and the registry uses GitHub OIDC, so no secrets are stored.
 
 ## Development
 

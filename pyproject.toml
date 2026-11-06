@@ -4,6 +4,13 @@ version = "0.1.0"
 description = "MCP server for kgromero.com: Kyle Romero's resume, experience, skills, and contact info"
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+keywords = ["mcp", "model-context-protocol", "resume", "claude"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Communications",
+]
 authors = [{ name = "Kyle Romero", email = "kgromero@gmail.com" }]
 dependencies = ["mcp>=2.3,<3", "httpx>=0.27"]
 
@@ -11,7 +18,8 @@ dependencies = ["mcp>=2.3,<3", "httpx>=0.27"]
 dev = ["pytest>=8", "pytest-asyncio>=0.23"]
 
 [project.urls]
-Homepage = "https://kgromero.com"
+Homepage = "https://kgromero.com/api-docs#mcp"
+Repository = "https://github.com/romero927/kgromero-mcp"
 
 [project.scripts]
 kgromero-mcp = "kgromero_mcp.server:main"

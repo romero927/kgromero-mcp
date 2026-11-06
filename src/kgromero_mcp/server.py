@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+from importlib.metadata import version
 from typing import Any
 
 from mcp.server.mcpserver import MCPServer
@@ -18,7 +19,7 @@ mcp = MCPServer(
     name="kgromero",
     title="Kyle Romero (kgromero.com)",
     website_url="https://kgromero.com",
-    version="0.1.0",
+    version=version("kgromero-mcp"),
     instructions=(
         "Answers questions about Kyle Romero, a software engineering leader, using "
         "the content published at kgromero.com. Start with get_profile for an overview. "
