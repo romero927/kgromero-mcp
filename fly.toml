@@ -1,0 +1,27 @@
+# Fly.io config for the public MCP endpoint. Served to users at
+# https://kgromero.com/mcp via a Netlify proxy (see the kgromero repo's netlify.toml).
+app = "kgromero-mcp"
+primary_region = "ewr"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 50
+    hard_limit = 100
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

@@ -2,6 +2,22 @@
 
 An [MCP](https://modelcontextprotocol.io) server for [kgromero.com](https://kgromero.com). It lets AI assistants (Claude, Cursor, etc.) answer questions about Kyle Romero's experience, skills, projects, and portfolio from the content on the site.
 
+## Use it
+
+The server is hosted at **`https://kgromero.com/mcp`** (Streamable HTTP, read-only, no sign-in).
+
+```bash
+claude mcp add --transport http kgromero https://kgromero.com/mcp
+```
+
+In Claude (web/desktop): Settings → Connectors → Add custom connector → paste the URL. In Cursor and other clients:
+
+```json
+{ "mcpServers": { "kgromero": { "url": "https://kgromero.com/mcp" } } }
+```
+
+## How it works
+
 Data comes from the live site and is cached for an hour:
 
 - `https://kgromero.com/api/resume`: resume in [JSON Resume](https://jsonresume.org) format
@@ -31,7 +47,7 @@ If the site can't be reached, the server uses the copies bundled in `src/kgromer
 
 **Prompt:** `assess_job_fit(job_description)`: compares the resume to a job posting.
 
-## Run it
+## Run it locally
 
 ```bash
 python3 -m venv .venv
@@ -62,6 +78,14 @@ claude mcp add kgromero -- /path/to/kgromero-mcp/.venv/bin/kgromero-mcp
 | --- | --- | --- |
 | `KGROMERO_SITE_URL` | `https://kgromero.com` | Point at another deployment, e.g. `http://localhost:5173` |
 | `KGROMERO_OFFLINE` | unset | Set to `1` to skip the network and use the bundled snapshot |
+
+## Deployment
+
+Runs on Fly.io as the `kgromero-mcp` app (`Dockerfile`, `fly.toml`). The machine stops when idle and starts on the next request. `kgromero.com/mcp` forwards to `https://kgromero-mcp.fly.dev/mcp` through a route in the site repo (`src/routes/mcp/+server.js`).
+
+```bash
+fly deploy --remote-only
+```
 
 ## Development
 

@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 from typing import Any
 
 from mcp.server.mcpserver import MCPServer
 from mcp_types import ToolAnnotations
+from starlette.requests import Request
+from starlette.responses import PlainTextResponse, Response
 
 from . import data
 
@@ -366,14 +369,31 @@ async def assess_job_fit(job_description: str) -> str:
     )
 
 
+@mcp.custom_route("/", methods=["GET"], include_in_schema=False)
+async def home(request: Request) -> Response:
+    """Health check, and a pointer for people who open the URL in a browser."""
+    return PlainTextResponse(
+        "kgromero.com MCP server. Connect an MCP client to /mcp. "
+        "Docs: https://github.com/romero927/kgromero-mcp\n"
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="kgromero.com MCP server")
     parser.add_argument("--http", action="store_true", help="serve Streamable HTTP instead of stdio")
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--host", default=os.environ.get("HOST", "127.0.0.1"))
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8000")))
     args = parser.parse_args()
     if args.http:
-        mcp.run("streamable-http", host=args.host, port=args.port, stateless_http=True)
+        # Stateless with plain JSON responses: no sessions to keep, and it works
+        # cleanly behind the Netlify proxy at kgromero.com/mcp.
+        mcp.run(
+            "streamable-http",
+            host=args.host,
+            port=args.port,
+            stateless_http=True,
+            json_response=True,
+        )
     else:
         mcp.run()
 
