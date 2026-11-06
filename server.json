@@ -8,15 +8,17 @@
     "url": "https://github.com/romero927/kgromero-mcp",
     "source": "github"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "kgromero-mcp",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "runtimeHint": "uvx",
-      "transport": { "type": "stdio" }
+      "transport": {
+        "type": "stdio"
+      }
     }
   ],
   "remotes": [

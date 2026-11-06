@@ -37,7 +37,7 @@ async def test_lists_all_tools():
     assert names == {
         "get_profile", "get_contact", "list_experience", "get_experience", "get_education",
         "get_career_timeline", "get_skills", "list_side_projects", "list_documents",
-        "get_interests", "get_travel", "search",
+        "get_interests", "get_travel", "search", "get_document",
     }
 
 

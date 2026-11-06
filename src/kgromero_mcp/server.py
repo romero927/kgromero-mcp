@@ -9,11 +9,11 @@ from importlib.metadata import version
 from typing import Any
 
 from mcp.server.mcpserver import MCPServer
-from mcp_types import ToolAnnotations
+from mcp_types import ImageContent, TextContent, ToolAnnotations
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse, Response
 
-from . import data
+from . import data, documents
 
 mcp = MCPServer(
     name="kgromero",
@@ -25,7 +25,8 @@ mcp = MCPServer(
         "the content published at kgromero.com. Start with get_profile for an overview. "
         "list_experience gives one entry per employer and get_experience the details of "
         "a role; get_career_timeline lists every title including promotions. get_skills, "
-        "list_side_projects, list_documents (portfolio and resume downloads), "
+        "list_side_projects, list_documents (portfolio and resume downloads; read one with "
+        "get_document), "
         "get_interests, get_travel, and get_contact cover the rest. Use search to find "
         "anything by keyword. Only state facts these tools return; do not invent details."
     ),
@@ -223,29 +224,37 @@ async def list_side_projects() -> dict[str, Any]:
 async def list_documents(group: str | None = None) -> list[dict[str, Any]]:
     """Downloadable resume formats plus the portfolio: architecture diagrams, process docs,
     project write-ups, certificates, and college lab reports, grouped by employer/school.
+    Use get_document to read one.
 
     Args:
         group: Optional filter by group name, e.g. "Resume", "MEARS", "HP", "Texas Tech",
             "Other". Case-insensitive substring.
     """
-    s = data.SITE_URL
-    groups = [{
-        "group": "Resume & contact",
-        "items": [
-            {"name": "Resume (PDF)", "url": f"{s}/Kyle_Romero-Resume.pdf"},
-            {"name": "Resume (Word)", "url": f"{s}/Kyle_Romero-Resume.docx"},
-            {"name": "Resume (Markdown)", "url": f"{s}/kgromero.md"},
-            {"name": "Resume (JSON Resume)", "url": f"{s}/api/resume"},
-            {"name": "Cover letter (PDF)", "url": f"{s}/Kyle_Romero-Coverletter.pdf"},
-            {"name": "Contact card (vCard)", "url": f"{s}/kgromero.vcf"},
-            {"name": "API docs (OpenAPI)", "url": f"{s}/api/openapi.json"},
-        ],
-    }]
+    groups = [documents.resume_group()]
     groups += (await data.get_site()).get("documents", [])
     if group:
         g = group.lower()
         groups = [x for x in groups if g in x["group"].lower()]
     return groups
+
+
+@mcp.tool(annotations=READ_ONLY, structured_output=False)
+async def get_document(
+    document: str, pages: str | None = None, as_images: bool = False
+) -> list[TextContent | ImageContent]:
+    """Read a document from kgromero.com: PDFs as text, diagrams and photos as images.
+
+    Many PDFs are slide decks or scans; the text result lists pages that are mostly
+    visual so you can call again with as_images=true to see them.
+
+    Args:
+        document: Name, part of a name, filename, or URL from list_documents
+            (e.g. "Electron Architecture", "Transcript", "RedditListener").
+        pages: PDF pages to return, e.g. "3", "1-5", or "2,4,7-9". Defaults to all
+            pages for text (up to a length limit).
+        as_images: Return PDF pages as images instead of text (up to 5 pages per call).
+    """
+    return await documents.get(document, pages, as_images)
 
 
 @mcp.tool(annotations=READ_ONLY)

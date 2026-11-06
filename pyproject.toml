@@ -1,6 +1,6 @@
 [project]
 name = "kgromero-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "MCP server for kgromero.com: Kyle Romero's resume, experience, skills, and contact info"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -17,7 +17,7 @@ classifiers = [
     "Topic :: Communications",
 ]
 authors = [{ name = "Kyle Romero", email = "kgromero@gmail.com" }]
-dependencies = ["mcp>=2.3,<3", "httpx>=0.27"]
+dependencies = ["mcp>=2.3,<3", "httpx>=0.27", "pypdfium2>=4.30", "pillow>=10"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-asyncio>=0.23"]
